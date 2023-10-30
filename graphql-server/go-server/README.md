@@ -48,3 +48,4 @@ func (r *queryResolver) FindX(ctx context.Context, input string) (string, error)
 The file `model/model_gen.go` has a new structure x that we defined.
 
 All we have to do is just implement the `FindX` function. And the content of the function is up to you to play with.
+
