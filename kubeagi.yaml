@@ -27,4 +27,8 @@ spec:
     namespace: arcadia
   override:
     set:
-      - deployment.imagePullPolcy=Always
+      - deployment.imagePullPolicy=Always
+      - portal.enabled=true
+      - portal.ingress.enabled=true
+      - portal.enableplayground=true
+      - portal.ingress.host=portal.172.22.96.167.nip.io
