@@ -7,7 +7,7 @@ global:
 # @param resources Resources to be used
 deployment:
   image: kubebb/arcadia:v0.0.1
-  imagePullPolcy: IfNotPresent
+  imagePullPolicy: IfNotPresent
   resources:
     limits:
       cpu: 5000m
@@ -67,12 +67,13 @@ minio:
       objectlocking: false
 
 portal:
-  enabled: false
+  enabled: true
+  port: 8081
   ingress:
-    enabled: false
-    hosts:
-      - host: localhost
-  enableplayground: false
+    path: ""
+    enabled: true
+    host: portal.172.22.96.167.nip.io
+  enableplayground: true
   oidc:
     enableoidc: false
     clientID: bff-client
