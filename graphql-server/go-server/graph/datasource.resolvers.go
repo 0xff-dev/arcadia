@@ -17,7 +17,7 @@ import (
 // CreateDatasource is the resolver for the createDatasource field.
 func (r *mutationResolver) CreateDatasource(ctx context.Context, input model.CreateDatasourceInput) (*model.Datasource, error) {
 	token := auth.ForOIDCToken(ctx)
-	c, err := client.GetClientByIDToken(token)
+	c, err := client.GetClient(token)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (r *mutationResolver) CreateDatasource(ctx context.Context, input model.Cre
 // UpdateDatasource is the resolver for the updateDatasource field.
 func (r *mutationResolver) UpdateDatasource(ctx context.Context, input *model.UpdateDatasourceInput) (*model.Datasource, error) {
 	token := auth.ForOIDCToken(ctx)
-	c, err := client.GetClientByIDToken(token)
+	c, err := client.GetClient(token)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (r *mutationResolver) UpdateDatasource(ctx context.Context, input *model.Up
 // DeleteDatasource is the resolver for the deleteDatasource field.
 func (r *mutationResolver) DeleteDatasource(ctx context.Context, input *model.DeleteDatasourceInput) (*string, error) {
 	token := auth.ForOIDCToken(ctx)
-	c, err := client.GetClientByIDToken(token)
+	c, err := client.GetClient(token)
 	if err != nil {
 		return nil, err
 	}
@@ -94,30 +94,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) Ds(ctx context.Context, input model.ListDatasourceInput) ([]*model.Datasource, error) {
-	token := auth.ForOIDCToken(ctx)
-
-	c, err := client.GetClientByIDToken(token)
-	if err != nil {
-		return nil, err
-	}
-	name := ""
-	labelSelector, fieldSelector := "", ""
-	if input.Name != nil {
-		name = *input.Name
-	}
-	if input.FieldSelector != nil {
-		fieldSelector = *input.FieldSelector
-	}
-	if input.LabelSelector != nil {
-		labelSelector = *input.LabelSelector
-	}
-	return datasource.DatasourceList(ctx, c, name, input.Namespace, labelSelector, fieldSelector)
-}
