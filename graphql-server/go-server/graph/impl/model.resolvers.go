@@ -1,4 +1,4 @@
-package graph
+package impl
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -89,7 +89,7 @@ func (r *queryResolver) GetModel(ctx context.Context, name string, namespace str
 }
 
 // ListModels is the resolver for the listModels field.
-func (r *queryResolver) ListModels(ctx context.Context, input model.ListModelInput) (*model.PaginatedModel, error) {
+func (r *queryResolver) ListModels(ctx context.Context, input model.ListModelInput) (*model.PaginatedResult, error) {
 	token := auth.ForOIDCToken(ctx)
 	c, err := client.GetClient(token)
 	if err != nil {
@@ -119,7 +119,7 @@ func (r *queryResolver) ListModels(ctx context.Context, input model.ListModelInp
 	if err != nil {
 		return nil, err
 	}
-	var filteredResult []*model.Model
+	var filteredResult []model.PageNode
 	for idx, u := range result {
 		if (name == "" || strings.Contains(u.Name, name)) && (displayName == "" || strings.Contains(u.DisplayName, displayName)) {
 			filteredResult = append(filteredResult, result[idx])
@@ -131,7 +131,7 @@ func (r *queryResolver) ListModels(ctx context.Context, input model.ListModelInp
 	if end > totalCount {
 		end = totalCount
 	}
-	return &model.PaginatedModel{
+	return &model.PaginatedResult{
 		TotalCount:  totalCount,
 		HasNextPage: end < totalCount,
 		Nodes:       filteredResult[(page-1)*pageSize : end],

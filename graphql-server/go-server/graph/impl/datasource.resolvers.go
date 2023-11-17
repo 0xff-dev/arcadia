@@ -1,4 +1,4 @@
-package graph
+package impl
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -92,7 +92,7 @@ func (r *queryResolver) Datasource(ctx context.Context, name string, namespace s
 }
 
 // DatasourcesPaged is the resolver for the datasourcesPaged field.
-func (r *queryResolver) DatasourcesPaged(ctx context.Context, input model.ListDatasourceInput) (*model.PaginatedDatasource, error) {
+func (r *queryResolver) DatasourcesPaged(ctx context.Context, input model.ListDatasourceInput) (*model.PaginatedResult, error) {
 	token := auth.ForOIDCToken(ctx)
 	c, err := client.GetClient(token)
 	if err != nil {
@@ -122,7 +122,7 @@ func (r *queryResolver) DatasourcesPaged(ctx context.Context, input model.ListDa
 	if err != nil {
 		return nil, err
 	}
-	var filteredResult []*model.Datasource
+	var filteredResult []model.PageNode
 	for idx, u := range result {
 		if (name == "" || strings.Contains(u.Name, name)) && (displayName == "" || strings.Contains(u.DisplayName, displayName)) {
 			filteredResult = append(filteredResult, result[idx])
@@ -134,18 +134,9 @@ func (r *queryResolver) DatasourcesPaged(ctx context.Context, input model.ListDa
 	if end > totalCount {
 		end = totalCount
 	}
-	return &model.PaginatedDatasource{
+	return &model.PaginatedResult{
 		TotalCount:  totalCount,
 		HasNextPage: end < totalCount,
 		Nodes:       filteredResult[(page-1)*pageSize : end],
 	}, nil
 }
-
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
-
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
-
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }

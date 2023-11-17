@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+type PageNode interface {
+	IsPageNode()
+}
+
 type CreateDatasourceInput struct {
 	Name          string                 `json:"name"`
 	Namespace     string                 `json:"namespace"`
@@ -40,6 +44,8 @@ type Datasource struct {
 	FileCount       *int                   `json:"fileCount,omitempty"`
 	UpdateTimestamp time.Time              `json:"updateTimestamp"`
 }
+
+func (Datasource) IsPageNode() {}
 
 type DeleteDatasourceInput struct {
 	Name          *string `json:"name,omitempty"`
@@ -102,6 +108,8 @@ type Model struct {
 	UpdateTimestamp *time.Time             `json:"updateTimestamp,omitempty"`
 }
 
+func (Model) IsPageNode() {}
+
 type Oss struct {
 	Bucket *string `json:"bucket,omitempty"`
 	Object *string `json:"Object,omitempty"`
@@ -112,20 +120,12 @@ type OssInput struct {
 	Object *string `json:"Object,omitempty"`
 }
 
-type PaginatedDatasource struct {
-	HasNextPage bool          `json:"hasNextPage"`
-	Nodes       []*Datasource `json:"nodes,omitempty"`
-	Page        *int          `json:"page,omitempty"`
-	PageSize    *int          `json:"pageSize,omitempty"`
-	TotalCount  int           `json:"totalCount"`
-}
-
-type PaginatedModel struct {
-	HasNextPage bool     `json:"hasNextPage"`
-	Nodes       []*Model `json:"nodes,omitempty"`
-	Page        *int     `json:"page,omitempty"`
-	PageSize    *int     `json:"pageSize,omitempty"`
-	TotalCount  int      `json:"totalCount"`
+type PaginatedResult struct {
+	HasNextPage bool       `json:"hasNextPage"`
+	Nodes       []PageNode `json:"nodes,omitempty"`
+	Page        *int       `json:"page,omitempty"`
+	PageSize    *int       `json:"pageSize,omitempty"`
+	TotalCount  int        `json:"totalCount"`
 }
 
 type TypedObjectReference struct {
