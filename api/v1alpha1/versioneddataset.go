@@ -50,7 +50,10 @@ func CopyedFileGroup2Status(instance *VersionedDataset) (bool, []DatasourceFileS
 	// 2. Organize the contents of the fileGroup into this format: {"datasourceNamespace datasourceName": ["file1", "file2"]}
 	fileGroup := make(map[string][]string)
 	for _, fg := range instance.Spec.FileGroups {
-		namespace := fg.Datasource.GetNamespace()
+		namespace := instance.Namespace
+		if fg.Datasource.Namespace != nil {
+			namespace = *fg.Datasource.Namespace
+		}
 		key := fmt.Sprintf("%s %s", namespace, fg.Datasource.Name)
 		if _, ok := fileGroup[key]; !ok {
 			fileGroup[key] = make([]string, 0)
