@@ -148,13 +148,13 @@ func main() {
 		}
 	}
 
-	if err = (&controllers.DatasourceReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Datasource")
-		os.Exit(1)
-	}
+	// if err = (&controllers.DatasourceReconciler{
+	// 	Client: mgr.GetClient(),
+	// 	Scheme: mgr.GetScheme(),
+	// }).SetupWithManager(mgr); err != nil {
+	// 	setupLog.Error(err, "unable to create controller", "controller", "Datasource")
+	// 	os.Exit(1)
+	// }
 	if err = (&controllers.EmbedderReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -176,34 +176,34 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "VersionedDataset")
 		os.Exit(1)
 	}
-	if err = (&controllers.WorkerReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Worker")
-		os.Exit(1)
-	}
-	if err = (&controllers.ModelReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Model")
-		os.Exit(1)
-	}
-	if err = (&controllers.KnowledgeBaseReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KnowledgeBase")
-		os.Exit(1)
-	}
-	if err = (&controllers.VectorStoreReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "VectorStore")
-		os.Exit(1)
-	}
+	// if err = (&controllers.WorkerReconciler{
+	// 	Client: mgr.GetClient(),
+	// 	Scheme: mgr.GetScheme(),
+	// }).SetupWithManager(mgr); err != nil {
+	// 	setupLog.Error(err, "unable to create controller", "controller", "Worker")
+	// 	os.Exit(1)
+	// }
+	// if err = (&controllers.ModelReconciler{
+	// 	Client: mgr.GetClient(),
+	// 	Scheme: mgr.GetScheme(),
+	// }).SetupWithManager(mgr); err != nil {
+	// 	setupLog.Error(err, "unable to create controller", "controller", "Model")
+	// 	os.Exit(1)
+	// }
+	// if err = (&controllers.KnowledgeBaseReconciler{
+	// 	Client: mgr.GetClient(),
+	// 	Scheme: mgr.GetScheme(),
+	// }).SetupWithManager(mgr); err != nil {
+	// 	setupLog.Error(err, "unable to create controller", "controller", "KnowledgeBase")
+	// 	os.Exit(1)
+	// }
+	// if err = (&controllers.VectorStoreReconciler{
+	// 	Client: mgr.GetClient(),
+	// 	Scheme: mgr.GetScheme(),
+	// }).SetupWithManager(mgr); err != nil {
+	// 	setupLog.Error(err, "unable to create controller", "controller", "VectorStore")
+	// 	os.Exit(1)
+	// }
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
