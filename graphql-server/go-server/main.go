@@ -98,6 +98,7 @@ func main() {
 	http.HandleFunc("/minio/get_multipart_url", minio.GetMultipartUploadURL)
 	http.HandleFunc("/minio/complete_multipart", minio.CompleteMultipart)
 	http.HandleFunc("/minio/update_chunk", minio.UpdateMultipart)
+	http.HandleFunc("/minio/delete_files", minio.DeleteFiles)
 
 	klog.Infof("listening server on port: %d", *port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *host, *port), nil))

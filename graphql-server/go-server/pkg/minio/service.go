@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -426,6 +427,53 @@ func CompleteMultipart(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		klog.Errorf("w.Write failed: %s", err)
 	}
+}
+
+type DelteFileBody struct {
+	Files      []string `json:"files"`
+	Bucket     string   `json:"bucket"`
+	BucketPath string   `json:"bucket_path"`
+}
+
+func DeleteFiles(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		_, _ = w.Write([]byte("only support post method"))
+		return
+	}
+	var body DelteFileBody
+	data, err := io.ReadAll(req.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("internal server error"))
+		return
+	}
+	if err := json.Unmarshal(data, &body); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("internal server error"))
+		return
+	}
+
+	client, _, err := GetClients()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("internal server error, can't connect to fileserve"))
+		return
+	}
+
+	bucketPath := body.BucketPath
+	if !strings.HasSuffix(bucketPath, "/") {
+		bucketPath += "/"
+	}
+	for _, f := range body.Files {
+		go func(fn string) {
+			client.RemoveObject(req.Context(), body.Bucket, fmt.Sprintf("%s/%s", bucketPath, fn), minio.RemoveObjectOptions{
+				ForceDelete: true,
+			})
+		}(f)
+	}
+	_, _ = w.Write([]byte("success"))
+	return
 }
 
 func UpdateMultipart(w http.ResponseWriter, req *http.Request) {
