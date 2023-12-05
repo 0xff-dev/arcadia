@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"sort"
@@ -437,6 +438,80 @@ func (m *minioAPI) DeleteFiles(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, "success")
 }
 
+func (m *minioAPI) GetFile(ctx *gin.Context) {
+	bucket := ctx.Query(bucketQuery)
+	fileName := ctx.Query("fileName")
+	client, _, err := minio1.GetClients()
+
+	minioObject, err := client.GetObject(ctx.Request.Context(), bucket, fileName, minio.GetObjectOptions{})
+	if err != nil {
+		klog.Errorf("read file from %s/%s error %s", bucket, fileName, err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	defer minioObject.Close()
+	io.Copy(ctx.Writer, minioObject)
+}
+
+func (m *minioAPI) UpdateFile(ctx *gin.Context) {
+	file, err := ctx.FormFile("file")
+	bucket, found := ctx.GetPostForm(bucketQuery)
+	if !found {
+		klog.Warningf("bucket is required")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "bucket is required",
+		})
+		return
+	}
+	fileName, found := ctx.GetPostForm("fileName")
+	if !found {
+		klog.Warningf("fileName is required")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "fileName is required",
+		})
+		return
+	}
+	sizeStr, found := ctx.GetPostForm("size")
+	if !found {
+		klog.Warningf("size is required")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "size is required",
+		})
+		return
+	}
+	var size int64
+	fmt.Sscanf(sizeStr, "%d", &size)
+	client, _, err := minio1.GetClients()
+	if err != nil {
+		klog.Errorf("try to update file content, failed to get oss client error %s", err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		klog.Errorf("can't open uploaded file")
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	_, err = client.PutObject(ctx.Request.Context(), bucket, fileName, f, size, minio.PutObjectOptions{})
+	if err != nil {
+		klog.Errorf("failed to put object error %s", err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, "success")
+}
+
 func isObjectExist(ctx context.Context, bucketName string, objectName string) (bool, error) {
 	isExist := false
 	// TODO doneCh?
@@ -555,4 +630,9 @@ func RegisterMinIOAPI(e *gin.Engine, conf config.ServerConfig) {
 
 	group.DELETE("/model/files/delete_files", auth.AuthInterceptor(conf.EnableOIDC, oidc.Verifier, "delete", "models"), api.DeleteFiles)
 	group.DELETE("/versioneddataset/files/delete_files", auth.AuthInterceptor(conf.EnableOIDC, oidc.Verifier, "delete", "versioneddatasets"), api.DeleteFiles)
+
+	group.GET("/versioneddataset/files/file", auth.AuthInterceptor(conf.EnableOIDC, oidc.Verifier, "get", "versioneddatasets"), api.GetFile)
+	group.PUT("/versioneddataset/files/file", auth.AuthInterceptor(conf.EnableOIDC, oidc.Verifier, "update", "versioneddatasets"), api.UpdateFile)
+	group.GET("/model/files/file", auth.AuthInterceptor(conf.EnableOIDC, oidc.Verifier, "get", "models"), api.GetFile)
+	group.PUT("/model/files/file", auth.AuthInterceptor(conf.EnableOIDC, oidc.Verifier, "update", "models"), api.UpdateFile)
 }
